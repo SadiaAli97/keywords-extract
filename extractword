@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jul 17 15:06:07 2018
+
+@author: sadiaali
+"""
+
+
+import string
+from nltk.corpus import stopwords
+import PyPDF2
+import pandas as pd
+java_key_string="XML abstract class  abstract method Abstract Window Toolkit (AWT)   access control  ACID    actual parameter list   API     applet  argument        array   ASCII   atomic  authentication  authorization   autoboxing                      bean    binary operator bit     bitwise operator        block   boolean break   byte    bytecode                        case    casting catch   char    class   class method    class variable  classpath       client  codebase        comment commit  compilation unit        compiler        compositing     constructor     const   continue        conversational state    CORBA   core class      core packages   credentials     critical section                declaration     default definition      delegation      deprecation     derived from    distributed     distributed application do      DOM     double  double precision        DTD             else    EmbeddedJava Technology encapsulation   enum    enumerated type exception       exception handler       executable content      extends         field   final   finally float   for     FTP     formal parameter list           garbage collection      generic goto    group   GUI             hexadecimal     hierarchy       HTML    HTTP    HTTPS           IDL     identifier      IIOP    if      impersonation   implements      import  inheritance     instance        instance method instance variable       instanceof      int     interface       Internet        IP      interpreter             JAIN    JAR     Java    Java 2 Platform Java 2 Platform, Enterprise Edition (J2EE platform)     Java 2 Platform, Micro Edition (J2ME platform)  Java 2 Platform, Standard Edition (J2SE platform)       Java 2 SDK, Standard Edition    Java APIs for Integrated Networks (JAIN)        Java Card API   Java Compatibility Kit (JCK)    Java Database Connectivity (JDBC)       Java Development Kit (JDK)      Java Foundation Classes (JFC)   Java IDL        Java Interface Definition Language (IDL)        Java Media APIs Java Media Framework    Java Naming and Directory Interface (JNDI)      Java Native Interface   Java Platform   Java Platform Editions  Java Remote Method Invocation (RMI)     Java Runtime Environment (JRE)  Java virtual machine 1  JavaBeans       JavaCheck       JavaSafe        JavaScript      JavaSpaces      JDBC    JDK     JFC     Jini Technology JNDI    JNI     JRE     Just-in-time (JIT) Compiler     JVM             keyword         lexical linker  literal local variable  long            member  method  multithreaded           native  new     null            object  object-oriented design  octal   optional packages       ORB     OS principal    OTS     overloading     overriding              package peer    persistence     pixel   POA     primary key     primitive type  principal       private privilege       process property        profiles        protected       public                  raster  realm   reference       return  RMI     rollback        root    RPC     runtime system                  SAX     sandbox scope   Secure Socket Layer (SSL)       security attributes     security context        security policy domain  security technology domain      serialization   short   single precision        SGML    SOAP    SQL     static  static field    static method   stream  subarray        subclass        subtype superclass      super   supertype       switch  Swing           synchronized                    TCP/IP  Technology Compatibility Kit (TCK)      thin client     this    thread  throw   throws  transaction     transaction isolation level     transaction manager     transient       try     type                    Unicode URI     URL     URN                     variable        virtual machine void    volatile                Web server      while   world readable files    wrapper WWW     abstract  "   
+java_key_string=java_key_string.lower()
+java_keys_words=java_key_string.split()
+def process_text(x):
+    no_punc=[char for char in x if char not in string.punctuation]
+    no_punc=''.join(no_punc)
+    no_punc2= [word for word in no_punc.split() if word.lower() not in stopwords.words('english')]
+    return [word for word in no_punc2 if word.lower()  in java_keys_words]
+f=open("/Users/sadiaali/Desktop/JavaBasics-notes.pdf","rb")     
+rf=PyPDF2.PdfFileReader(f)
+num=rf.numPages
+l_key=[]
+for page in range(0,num):
+    pdfpage=rf.getPage(page)
+    pages=pdfpage.extractText()
+    spg=str(pages)
+    (l_key.extend(process_text(spg)))
+
+key_dict={}    
+
+for w in l_key:
+    if(w in key_dict):
+       
+        key_dict[w] += 1
+    else:
+       
+       key_dict[w] = 1
+
+s=pd.Series(key_dict) 
+df=pd.DataFrame(s)
+df.reset_index(inplace=True)
+df.columns=["Keywords","Weight"]
+df_sort=(df.sort_values(["Weight"],ascending=False))
+print(df_sort)
+
